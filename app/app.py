@@ -1,6 +1,5 @@
 from flask import Flask, request, abort, jsonify
 from flask_pymongo import PyMongo
-from bson.objectid import ObjectId
 import os
 import time
 import datetime
@@ -15,6 +14,13 @@ def result_wrapper(result):
     return jsonify({
         "data": result
     })
+
+def parse_date(datestring):
+    return datetime.datetime.strptime(datestring, "%d.%m.%Y")
+
+def get_age(born):
+    today = datetime.date.today()
+    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
 @app.route('/imports', methods=['POST'])
 def imports():
@@ -34,7 +40,7 @@ def change_citizen_info(import_id, citizen_id):
     """
     Изменяет информацию о жителе в указанном наборе данных.
     """
-    return result_wrapper({})
+    return result_wrapper({}), 200
 
 @app.route('/imports/<string:import_id>/citizens', methods=['GET'])
 def get_citizens(import_id):
@@ -48,7 +54,7 @@ def get_citizens(import_id):
     result = list(DB[import_id].find())
     for record in result:
         del record['_id']
-    return result_wrapper(result)
+    return result_wrapper(result), 200
 
 @app.route('/imports/<string:import_id>/citizens/birthdays', methods=['GET'])
 def get_citizen_presents(import_id):
@@ -57,7 +63,25 @@ def get_citizen_presents(import_id):
     ближайшим родственникам (1-го порядка), сгруппированных по месяцам из
     указанного набора данных.
     """
-    return result_wrapper({})
+    if import_id not in DB.list_collection_names():
+        abort(400)
+
+    result = list(DB[import_id].find())
+    presents = {month:dict() for month in range(1, 13)}
+    citizens = dict()
+    for record in result:
+        citizens[record['citizen_id']] = {'birth_date' : record['birth_date'], 'relatives' : record['relatives']}
+    for citizen in citizens.keys():
+        for relative in citizens[citizen]['relatives']:
+            month = parse_date(citizens[relative]['birth_date']).month
+            presents[month][citizen] = presents[month].get(citizen, 0) + 1
+    answer = {}
+    for month in range(1,13):
+        key = str(month)
+        answer[key] = list()
+        for present in presents[month].keys():
+            answer[key].append({"citizen_id" : present, "presents" : presents[month][present]})
+    return result_wrapper(answer), 200
 
 @app.route('/imports/<string:import_id>/towns/stat/percentile/age', methods=['GET'])
 def get_town_statistics(import_id):
@@ -67,13 +91,11 @@ def get_town_statistics(import_id):
     """
     if import_id not in DB.list_collection_names():
         abort(400)
-    result = list(DB[import_id].find())
 
+    result = list(DB[import_id].find())
     towns = defaultdict(list)
-    today = datetime.date.today()
-    get_age = lambda born: today.year - born.year - ((today.month, today.day) < (born.month, born.day))
     for record in result:
-        towns[record['town']].append(get_age(datetime.datetime.strptime(record['birth_date'],"%d.%m.%Y")))
+        towns[record['town']].append(get_age(parse_date(record['birth_date'])))
 
     answer = []
     for town in towns.keys():
@@ -84,7 +106,7 @@ def get_town_statistics(import_id):
             "p75" : percentiles[1],
             "p99" : percentiles[2]
         })
-    return result_wrapper(answer)
+    return result_wrapper(answer), 200
 
 
 if __name__ == "__main__":

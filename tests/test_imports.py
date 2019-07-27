@@ -12,6 +12,28 @@ data = {
 "birth_date": "01.02.2000",
 "gender": "male",
 "relatives": [2, 28]
+},
+{
+"citizen_id": 2,
+"town": "Москва",
+"street": "Льва Толстого",
+"building": "16к7стр5",
+"appartement": 7,
+"name": "Иванов Иван Иванович",
+"birth_date": "01.02.2000",
+"gender": "male",
+"relatives": [1, 28]
+},
+{
+"citizen_id": 28,
+"town": "Москва",
+"street": "Льва Толстого",
+"building": "16к7стр5",
+"appartement": 7,
+"name": "Иванов Иван Иванович",
+"birth_date": "01.02.2000",
+"gender": "male",
+"relatives": [1, 2]
 }]
 }
 
