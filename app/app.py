@@ -1,38 +1,45 @@
 from flask import Flask, request, abort, jsonify
 from flask_pymongo import PyMongo
 import os
-import time
-import datetime
 from collections import defaultdict
 import numpy as np
-
+from utils import parse_date, get_age
+from validator import validate_imports
 
 app = Flask(__name__)
-
 
 def result_wrapper(result):
     return jsonify({
         "data": result
     })
 
-def parse_date(datestring):
-    return datetime.datetime.strptime(datestring, "%d.%m.%Y")
+def get_import_id():
+    return DB['counters'].find_one_and_update(
+        {"_id" : 31337},
+        {'$inc' : {"import_id":1}},
+        new=True
+    )['import_id']
 
-def get_age(born):
-    today = datetime.date.today()
-    return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
+
+@app.route('/test', methods=['GET'])
+def test():
+    return result_wrapper(get_import_id())
 
 @app.route('/imports', methods=['POST'])
 def imports():
     """
     Принимает на вход набор с данными о жителях в формате json.
     """
-    result = request.json['citizens']
-    print(result)
-    import_id = "".join(str(time.time()).split("."))
+    data = request.json['citizens']
+    try:
+        validate_imports(data)
+    except:
+        abort(400)
+    
+    import_id = str(get_import_id())
     DB.create_collection(import_id)
-    DB[import_id].insert_many(result)
-    result = { 'import_id' : import_id}
+    DB[import_id].insert_many(data)
+    result = { 'import_id' : int(import_id)}
     return result_wrapper(result), 201
 
 @app.route('/imports/<string:import_id>/citizens/<int:citizen_id>', methods=['PATCH'])
@@ -113,4 +120,8 @@ if __name__ == "__main__":
     app.config["MONGO_URI"] = os.environ.get('MONGODB_CONNECT_STRING')
     mongo = PyMongo(app)
     DB = mongo.cx['yandex-backend']
+
+    if 'counters' not in DB.list_collection_names():
+        DB['counters'].insert_one({'_id' : 31337,'import_id':0})
+
     app.run(debug=True, host='0.0.0.0', port=8080)
