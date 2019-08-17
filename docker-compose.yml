@@ -20,6 +20,7 @@ services:
       ME_CONFIG_MONGODB_ADMINPASSWORD: example
   yandex-backend:
     build: .
+    container_name: yandex-backend
     restart: always
     ports:
       - 8080:8080

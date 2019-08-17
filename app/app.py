@@ -20,6 +20,8 @@ def get_import_id():
         new=True
     )['import_id']
 
+def get_table_name(import_id):
+    return f"import_{import_id}"
 
 @app.route('/test', methods=['GET'])
 def test():
@@ -30,16 +32,16 @@ def imports():
     """
     Принимает на вход набор с данными о жителях в формате json.
     """
-    data = request.json['citizens']
+    data = request.json
     try:
         validate_imports(data)
     except:
         abort(400)
-    
-    import_id = str(get_import_id())
-    DB.create_collection(import_id)
-    DB[import_id].insert_many(data)
-    result = { 'import_id' : int(import_id)}
+    import_id = get_import_id()
+    import_table = get_table_name(import_id)
+    DB.create_collection(import_table)
+    DB[import_table].insert_many(data['citizens'])
+    result = { 'import_id' : import_id}
     return result_wrapper(result), 201
 
 @app.route('/imports/<string:import_id>/citizens/<int:citizen_id>', methods=['PATCH'])
@@ -54,7 +56,7 @@ def get_citizens(import_id):
     """
     Возвращает список всех жителей для указанного набора данных.
     """
-
+    import_id = get_table_name(import_id)
     if import_id not in DB.list_collection_names():
         abort(400)
 
@@ -70,6 +72,7 @@ def get_citizen_presents(import_id):
     ближайшим родственникам (1-го порядка), сгруппированных по месяцам из
     указанного набора данных.
     """
+    import_id = get_table_name(import_id)
     if import_id not in DB.list_collection_names():
         abort(400)
 
@@ -96,6 +99,7 @@ def get_town_statistics(import_id):
     Возвращает статистику по городам для указанного набора данных в разрезе
     возраста жителей: p50, p75, p99, где число - это значение перцентиля.
     """
+    import_id = get_table_name(import_id)
     if import_id not in DB.list_collection_names():
         abort(400)
 

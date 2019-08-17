@@ -71,17 +71,17 @@ SCHEMA_CITIZENS = {
 
 
 SCHEMA_PATCH = {
+    '1':2,
 }
 
 def validate_imports(data):
     validate(data, SCHEMA_CITIZENS)
-
     citizens = {}
-    for citizen in data:
+    for citizen in data['citizens']:
         citizens[citizen['citizen_id']] = {'birth_date': citizen['birth_date'], 'relatives': citizen['relatives']}
     
     # unique citizen_id check
-    assert len(citizens) == len(data)
+    assert len(citizens) == len(data['citizens'])
 
     for cid, citizen in citizens.items():
         # check correct date
