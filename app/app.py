@@ -4,7 +4,8 @@ import os
 from collections import defaultdict
 import numpy as np
 from utils import parse_date, get_age
-from validator import validate_imports
+from validator import validate_imports, validate_patch
+from pymongo import ReturnDocument
 
 app = Flask(__name__)
 
@@ -49,7 +50,25 @@ def change_citizen_info(import_id, citizen_id):
     """
     Изменяет информацию о жителе в указанном наборе данных.
     """
-    return result_wrapper({}), 200
+
+    import_id = get_table_name(import_id)
+    if import_id not in DB.list_collection_names():
+        abort(404)
+    
+    data = request.json
+    try:
+        validate_patch(data)
+    except:
+        abort(400)
+
+    query = { "citizen_id" : citizen_id}
+    values = { "$set" : data}
+    result = DB[import_id].find_one_and_update(query, values, return_document=ReturnDocument.AFTER)
+
+    if len(result) > 0:
+        return result_wrapper(result), 200
+    else:
+        abort(404)
 
 @app.route('/imports/<string:import_id>/citizens', methods=['GET'])
 def get_citizens(import_id):
@@ -58,7 +77,7 @@ def get_citizens(import_id):
     """
     import_id = get_table_name(import_id)
     if import_id not in DB.list_collection_names():
-        abort(400)
+        abort(404)
 
     result = list(DB[import_id].find())
     for record in result:
@@ -74,7 +93,7 @@ def get_citizen_presents(import_id):
     """
     import_id = get_table_name(import_id)
     if import_id not in DB.list_collection_names():
-        abort(400)
+        abort(404)
 
     result = list(DB[import_id].find())
     presents = {month:dict() for month in range(1, 13)}
@@ -101,7 +120,7 @@ def get_town_statistics(import_id):
     """
     import_id = get_table_name(import_id)
     if import_id not in DB.list_collection_names():
-        abort(400)
+        abort(404)
 
     result = list(DB[import_id].find())
     towns = defaultdict(list)
@@ -126,6 +145,6 @@ if __name__ == "__main__":
     DB = mongo.cx['yandex-backend']
 
     if 'counters' not in DB.list_collection_names():
-        DB['counters'].insert_one({'_id' : 31337,'import_id':0})
+        DB['counters'].insert_one({'_id' : 31337, 'import_id' : 0})
 
     app.run(debug=True, host='0.0.0.0', port=8080)

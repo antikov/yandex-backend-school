@@ -21,7 +21,7 @@ SCHEMA_CITIZENS = {
                     "type" : "string",
                     "minLength": 1
                 },
-                "appartement" : {
+                "apartment" : {
                     "type" : "integer"
                 },
                 "name" : {
@@ -44,12 +44,13 @@ SCHEMA_CITIZENS = {
                     }
                 }
             },
+            "additionalProperties": False,
             "required" : [
                 'citizen_id',
                 'town',
                 'street',
                 'building',
-                'appartement',
+                'apartment',
                 'name',
                 'birth_date',
                 'gender',
@@ -64,6 +65,7 @@ SCHEMA_CITIZENS = {
             "items" : { "$ref" : "#/definitions/citizen"}
         }
     },
+    "additionalProperties": False,
     "required" : [
         "citizens"
     ]
@@ -71,8 +73,47 @@ SCHEMA_CITIZENS = {
 
 
 SCHEMA_PATCH = {
-    '1':2,
+    "type" : "object",
+    "properties" : {
+        "town" : {
+            "type" : "string",
+            "minLength": 1
+        },
+        "street" : {
+            "type" : "string",
+            "minLength": 1
+        },
+        "building" : {
+            "type" : "string",
+            "minLength": 1
+        },
+        "apartment" : {
+            "type" : "integer"
+        },
+        "name" : {
+            "type" : "string",
+            "minLength": 1
+        },
+        "birth_date" : {
+            "type" : "string",
+            "pattern" : "^[0-9]{2}\.[0-9]{2}\.[0-9]{4}$",
+            "format" : "date"
+        },
+        "gender" : {
+            "type" : "string",
+            "pattern" : "^(male|female)$"
+        },
+        "relatives" : {
+            "type" : "array",
+            "items" : {
+                "type": "integer"
+            }
+        }
+    },
+    "minProperties": 1,
+    "additionalProperties": False,
 }
+
 
 def validate_imports(data):
     validate(data, SCHEMA_CITIZENS)
@@ -94,3 +135,4 @@ def validate_imports(data):
 
 def validate_patch(data):
     validate(data, SCHEMA_PATCH)
+    parse_date(data['birth_date'])

@@ -42,7 +42,6 @@ class TestApp(unittest.TestCase):
         }
         r = requests.post(url, json=data)
         self.assertEqual(r.status_code, 201)
-        #print(json.loads(r.content))
         self.import_id = json.loads(r.content)["data"]["import_id"]
 
     def test_upper(self):
