@@ -2,6 +2,8 @@ version: '3.5'
 services:
   mongo:
     image: mongo:latest
+    volumes:
+     - ./data/db:/data/db
     container_name: mongodb
     restart: always
     environment:
@@ -9,7 +11,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: example
     ports:
      - 27017:27017
-    command: mongod --smallfiles --logpath=/dev/null
+    command: mongod --logpath=/dev/null
   mongo-express:
     image: mongo-express
     restart: always
