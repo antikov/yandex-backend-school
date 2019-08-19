@@ -1,17 +1,23 @@
-import unittest
 import requests
 import json
+import pytest
 
-class TestApp(unittest.TestCase):
-    def test_imports_good(self):
-        url = 'http://localhost:8080/imports'
+@pytest.mark.incremental
+class TestImports:
+    def test_connect(self):
+        url = 'http://0.0.0.0:8080/'
+        r = requests.get(url)
+        assert r.status_code == 404
+
+    def test_good_import(self):
+        url = 'http://0.0.0.0:8080/imports'
         data = {
         "citizens": [{
         "citizen_id": 1,
         "town": "Москва",
         "street": "Льва Толстого",
         "building": "16к7стр5",
-        "appartement": 7,
+        "apartment": 7,
         "name": "Иванов Иван Иванович",
         "birth_date": "01.02.2000",
         "gender": "male",
@@ -22,7 +28,7 @@ class TestApp(unittest.TestCase):
         "town": "Москва",
         "street": "Льва Толстого",
         "building": "16к7стр5",
-        "appartement": 7,
+        "apartment": 7,
         "name": "Иванов Иван Иванович",
         "birth_date": "01.02.2000",
         "gender": "male",
@@ -33,7 +39,7 @@ class TestApp(unittest.TestCase):
         "town": "Москва",
         "street": "Льва Толстого",
         "building": "16к7стр5",
-        "appartement": 7,
+        "apartment": 7,
         "name": "Иванов Иван Иванович",
         "birth_date": "01.02.2000",
         "gender": "male",
@@ -41,23 +47,4 @@ class TestApp(unittest.TestCase):
         }]
         }
         r = requests.post(url, json=data)
-        self.assertEqual(r.status_code, 201)
-        self.import_id = json.loads(r.content)["data"]["import_id"]
-
-    def test_upper(self):
-        self.assertEqual('foo'.upper(), 'FOO')
-
-    def test_isupper(self):
-        self.assertTrue('FOO'.isupper())
-        self.assertFalse('Foo'.isupper())
-
-    def test_split(self):
-        s = 'hello world'
-        self.assertEqual(s.split(), ['hello', 'world'])
-        # check that s.split fails when the separator is not a string
-        with self.assertRaises(TypeError):
-            s.split(2)
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert r.status_code == 201
