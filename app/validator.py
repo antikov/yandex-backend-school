@@ -120,6 +120,9 @@ def validate_imports(data):
     citizens = {}
     for citizen in data['citizens']:
         citizens[citizen['citizen_id']] = {'birth_date': citizen['birth_date'], 'relatives': citizen['relatives']}
+
+        # check own id in relatives
+        assert citizen['citizen_id'] not in citizen['relatives']
     
     # unique citizen_id check
     assert len(citizens) == len(data['citizens'])
