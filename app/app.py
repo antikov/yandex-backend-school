@@ -24,10 +24,6 @@ def get_import_id():
 def get_table_name(import_id):
     return f"import_{import_id}"
 
-@app.route('/test', methods=['GET'])
-def test():
-    return result_wrapper(get_import_id())
-
 @app.route('/imports', methods=['POST'])
 def imports():
     """
@@ -41,7 +37,9 @@ def imports():
     import_id = get_import_id()
     import_table = get_table_name(import_id)
     DB.create_collection(import_table)
-    DB[import_table].insert_many(data['citizens'])
+    #if empty:
+    if len(data['citizens']) > 0:
+        DB[import_table].insert_many(data['citizens'])
     result = { 'import_id' : import_id}
     return result_wrapper(result), 201
 
@@ -51,8 +49,8 @@ def change_citizen_info(import_id, citizen_id):
     Изменяет информацию о жителе в указанном наборе данных.
     """
 
-    import_id = get_table_name(import_id)
-    if import_id not in DB.list_collection_names():
+    import_table = get_table_name(import_id)
+    if import_table not in DB.list_collection_names():
         abort(404)
     
     data = request.json
@@ -63,7 +61,7 @@ def change_citizen_info(import_id, citizen_id):
 
     query = { "citizen_id" : citizen_id}
     values = { "$set" : data}
-    result = DB[import_id].find_one_and_update(query, values, return_document=ReturnDocument.AFTER)
+    result = DB[import_table].find_one_and_update(query, values, return_document=ReturnDocument.AFTER)
 
     if len(result) > 0:
         return result_wrapper(result), 200
@@ -75,11 +73,11 @@ def get_citizens(import_id):
     """
     Возвращает список всех жителей для указанного набора данных.
     """
-    import_id = get_table_name(import_id)
-    if import_id not in DB.list_collection_names():
+    import_table = get_table_name(import_id)
+    if import_table not in DB.list_collection_names():
         abort(404)
 
-    result = list(DB[import_id].find())
+    result = list(DB[import_table].find())
     for record in result:
         del record['_id']
     return result_wrapper(result), 200
@@ -91,11 +89,11 @@ def get_citizen_presents(import_id):
     ближайшим родственникам (1-го порядка), сгруппированных по месяцам из
     указанного набора данных.
     """
-    import_id = get_table_name(import_id)
-    if import_id not in DB.list_collection_names():
+    import_table = get_table_name(import_id)
+    if import_table not in DB.list_collection_names():
         abort(404)
 
-    result = list(DB[import_id].find())
+    result = list(DB[import_table].find())
     presents = {month:dict() for month in range(1, 13)}
     citizens = dict()
     for record in result:
@@ -118,11 +116,11 @@ def get_town_statistics(import_id):
     Возвращает статистику по городам для указанного набора данных в разрезе
     возраста жителей: p50, p75, p99, где число - это значение перцентиля.
     """
-    import_id = get_table_name(import_id)
-    if import_id not in DB.list_collection_names():
+    import_table = get_table_name(import_id)
+    if import_table not in DB.list_collection_names():
         abort(404)
 
-    result = list(DB[import_id].find())
+    result = list(DB[import_table].find())
     towns = defaultdict(list)
     for record in result:
         towns[record['town']].append(get_age(parse_date(record['birth_date'])))
