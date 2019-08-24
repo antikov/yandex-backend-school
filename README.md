@@ -17,6 +17,5 @@ docker-compose up
 
 # Тесты
 ```
-docker build -t yandex-backend .
 ./docker_run_tests.sh
 ```
