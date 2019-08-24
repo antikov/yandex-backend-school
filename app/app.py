@@ -148,7 +148,7 @@ def get_town_statistics(import_id):
 
     answer = []
     for town in towns.keys():
-        percentiles = list(map(int, np.percentile(towns[town], [50, 75, 99], interpolation='linear')))
+        percentiles = [round(percentile, 2) for percentile in np.percentile(towns[town], [50, 75, 99], interpolation='linear')]
         answer.append({
             "town" : town, 
             "p50" : percentiles[0],

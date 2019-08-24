@@ -1,5 +1,5 @@
 from jsonschema import validate
-from utils import parse_date
+from utils import parse_date, get_current_date
 
 SCHEMA_CITIZENS = {
     "definitions": {
@@ -7,26 +7,32 @@ SCHEMA_CITIZENS = {
             "type" : "object",
             "properties": {
                 "citizen_id" : {
-                    "type" : "integer"
+                    "type" : "integer",
+                    "minimum" : 0
                 },
                 "town" : {
                     "type" : "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 256,
                 },
                 "street" : {
                     "type" : "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 256,
                 },
                 "building" : {
                     "type" : "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 256,
                 },
                 "apartment" : {
-                    "type" : "integer"
+                    "type" : "integer",
+                    "minimum" : 0
                 },
                 "name" : {
                     "type" : "string",
-                    "minLength": 1
+                    "minLength": 1,
+                    "maxLength": 256,
                 },
                 "birth_date" : {
                     "type" : "string",
@@ -40,7 +46,8 @@ SCHEMA_CITIZENS = {
                 "relatives" : {
                     "type" : "array",
                     "items" : {
-                        "type": "integer"
+                        "type": "integer",
+                        "minimum" : 0,
                     }
                 }
             },
@@ -77,22 +84,27 @@ SCHEMA_PATCH = {
     "properties" : {
         "town" : {
             "type" : "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 256,
         },
         "street" : {
             "type" : "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 256,
         },
         "building" : {
             "type" : "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 256,
         },
         "apartment" : {
-            "type" : "integer"
+            "type" : "integer",
+            "minimum" : 0,
         },
         "name" : {
             "type" : "string",
-            "minLength": 1
+            "minLength": 1,
+            "maxLength": 256,
         },
         "birth_date" : {
             "type" : "string",
@@ -106,7 +118,8 @@ SCHEMA_PATCH = {
         "relatives" : {
             "type" : "array",
             "items" : {
-                "type": "integer"
+                "type": "integer",
+                "minimum" : 0,
             }
         }
     },
@@ -129,7 +142,7 @@ def validate_imports(data):
 
     for cid, citizen in citizens.items():
         # check correct date
-        parse_date(citizen['birth_date'])
+        assert get_current_date() > parse_date(citizen['birth_date'])
         
         #check correct relatives
         for relative in citizen['relatives']:
@@ -138,4 +151,44 @@ def validate_imports(data):
 
 def validate_patch(data):
     validate(data, SCHEMA_PATCH)
-    parse_date(data['birth_date'])
+    assert get_current_date() > parse_date(data['birth_date'])
+
+
+if __name__ == "__main__":
+    a = {
+        "citizens": [{
+        "citizen_id": 1,
+        "town": "Москва",
+        "street": "Льва Толстого",
+        "building": "16к7стр5",
+        "apartment": 7,
+        "name": "Иванов Иван Иванович",
+        "birth_date": "01.02.2000",
+        "gender": "male",
+        "relatives": [2, 28]
+        },
+        {
+        "citizen_id": 2,
+        "town": "Москва",
+        "street": "Льва Толстого",
+        "building": "16к7стр5",
+        "apartment": 7,
+        "name": "Иванов Иван Иванович",
+        "birth_date": "01.02.2000",
+        "gender": "male",
+        "relatives": [1, 28]
+        },
+        {
+        "citizen_id": 28,
+        "town": "Москва",
+        "street": "Льва Толстого",
+        "building": "16к7стр5",
+        "apartment": 7,
+        "name": "Иванов Иван Иванович",
+        "birth_date": "01.02.2000",
+        "gender": "male",
+        "relatives": [1, 2]
+        }]
+        }
+
+    validate_imports(a)

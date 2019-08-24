@@ -68,7 +68,7 @@ class TestImports:
         # empty good import
         ({
         "citizens": []
-        }, 500),
+        }, 201),
   
         # new field "temp"
         ({
@@ -186,7 +186,48 @@ class TestImports:
         "relatives": []
         }]
         }, 400),
-
+        # bad date # 5
+        ({
+        "citizens": [{
+        "citizen_id": 1,
+        "town": "Москва",
+        "street": "Льва Толстого",
+        "building": "16к7стр5",
+        "apartment": 7,
+        "name": "Иванов Иван Иванович",
+        "birth_date": "30.04.2022",
+        "gender": "male",
+        "relatives": []
+        }]
+        }, 400),
+        # bad citizen_id
+        ({
+        "citizens": [{
+        "citizen_id": -1,
+        "town": "Москва",
+        "street": "Льва Толстого",
+        "building": "16к7стр5",
+        "apartment": 7,
+        "name": "Иванов Иван Иванович",
+        "birth_date": "30.04.2000",
+        "gender": "male",
+        "relatives": []
+        }]
+        }, 400),
+        # too long street
+        ({
+        "citizens": [{
+        "citizen_id": 5,
+        "town": "Москва",
+        "street": "Льва Толстого" * 200,
+        "building": "16к7стр5",
+        "apartment": 7,
+        "name": "Иванов Иван Иванович",
+        "birth_date": "30.04.2000",
+        "gender": "male",
+        "relatives": []
+        }]
+        }, 400),
     ])
     def test_import(self, data, status):
         url = 'http://0.0.0.0:8080/imports'
