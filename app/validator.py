@@ -151,7 +151,8 @@ def validate_imports(data):
 
 def validate_patch(data):
     validate(data, SCHEMA_PATCH)
-    assert get_current_date() > parse_date(data['birth_date'])
+    if 'birth_date' in data:
+        assert get_current_date() > parse_date(data['birth_date'])
 
 
 if __name__ == "__main__":

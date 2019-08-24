@@ -56,7 +56,7 @@ def change_citizen_info(import_id, citizen_id):
     current = DB[import_table].find_one({"citizen_id" : citizen_id})
     if not current:
         abort(404)
-
+    
     data = request.json
     try:
         validate_patch(data)
@@ -64,27 +64,26 @@ def change_citizen_info(import_id, citizen_id):
         if 'relatives' in data:
             # cant be own relative
             assert citizen_id not in data['relatives']
-
             # dublicate check
             assert len(data['relatives']) == len(set(data['relatives']))
-
             #bad citizen_id in relatives check
             for relative in data['relatives']:
                 assert DB[import_table].find({"citizen_id" : relative})
     except:
         abort(400)
-
+    
     if 'relatives' in data:
         # delete old relatives
         for relative in current['relatives']:
-            DB[import_table].find_one_and_update({"citizen_id" : relative}, {"$pull" : citizen_id})
+            DB[import_table].find_one_and_update({"citizen_id" : relative}, {"$pull" : { "relatives" : citizen_id}})
         # add new relatives
         for relative in data['relatives']:
-            DB[import_table].find_one_and_update({"citizen_id" : relative}, {"$addToSet" : citizen_id})
+            DB[import_table].find_one_and_update({"citizen_id" : relative}, {"$addToSet" : {"relatives" : citizen_id}})
 
     #patch
     result = DB[import_table].find_one_and_update({ "citizen_id" : citizen_id}, { "$set" : data}, return_document=ReturnDocument.AFTER)
     if result:
+        del result['_id']
         return result_wrapper(result), 200
     else:
         abort(500)
