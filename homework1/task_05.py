@@ -5,8 +5,18 @@
 import requests
 
 def get_numbers():
-    
-    pass
+    page = 1
+    answer = []
+    while True:
+        url = f'https://api.github.com/repos/microsoft/dotnet/issues?state=closed&page={page}&perpage=100'
+        r = requests.get(url).json()
+        if len(r) == 0:
+            break
+        print(r)
+        numbers = [el['number'] for el in r]
+        answer.extend(numbers)
+        page += 1
+    return answer
 
 if __name__ == "__main__":
     print(get_numbers())
