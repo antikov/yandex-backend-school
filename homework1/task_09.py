@@ -4,7 +4,7 @@
 
 from functools import wraps
 def myown_wraps(func):
-    
+    print(func.__name__)
     def wrapper(*args, **kwargs):
         """wrapper docstring"""
         func(*args, **kwargs)
