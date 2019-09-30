@@ -7,11 +7,14 @@ class A:
         return A
 
 class Meta(type):
-    def __init__(cls, name, bases, dct):
-        super(Meta, cls).__init__(name, bases, dct)
-        cls.f = A().f
+    def __new__(cls, name, bases, dct):
+        for el, value in A.__dict__.items():
+            if not el.startswith("__"):
+                dct[el] = value
+        return type(name, bases, dct)
 
 class B(metaclass=Meta):
     pass
+
 
 assert B().f() == A

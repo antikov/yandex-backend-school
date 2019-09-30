@@ -5,6 +5,7 @@
 def myown_wraps(func):
     def wrapper(wrap):
         wrap.__doc__ = func.__doc__
+        wrap.__name__ = func.__name__
         return wrap
     return wrapper
 

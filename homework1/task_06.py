@@ -15,6 +15,8 @@ def get_numbers():
         yield from numbers
         page += 1
 
+
 if __name__ == "__main__":
-    for number in get_numbers():
-        print(number, end=" ")
+    it = get_numbers()
+    for _ in range(123):
+        print(next(it), end=" ")
