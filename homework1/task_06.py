@@ -6,17 +6,15 @@ import requests
 
 def get_numbers():
     page = 1
-    answer = []
     while True:
         url = f'https://api.github.com/repos/microsoft/dotnet/issues?state=closed&page={page}&perpage=100'
         r = requests.get(url).json()
-        if len(r) == 0:
+        if len(r) == 0 or not isinstance(r, list):
             break
-        print(r)
         numbers = [el['number'] for el in r]
-        answer.extend(numbers)
+        yield from numbers
         page += 1
-    yield from numbers
 
 if __name__ == "__main__":
-    print(next(get_numbers()))
+    for number in get_numbers():
+        print(number, end=" ")

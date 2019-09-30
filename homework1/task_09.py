@@ -2,20 +2,14 @@
 # Декораторы
 # Написать аналог functools.wraps. Декоратор должен сохранять docstring декорируемой функции.
 
-from functools import wraps
 def myown_wraps(func):
-    print(func.__name__)
-    def wrapper(*args, **kwargs):
-        """wrapper docstring"""
-        func(*args, **kwargs)
-    print(wrapper.__doc__)
-    print(func.__doc__)
-    wrapper.__doc__ = func.__doc__
+    def wrapper(wrap):
+        wrap.__doc__ = func.__doc__
+        return wrap
     return wrapper
 
 def dec(wrapped):
     @myown_wraps(wrapped)
-    #@wraps(wrapped)
     def wrapper(*args, **kwargs):
         """wrapper docstring"""
         print('before')
@@ -28,6 +22,4 @@ def f():
     """f docstring"""
     print('f()')
 
-print(f.__name__)
-print(f.__doc__)
 assert f.__doc__ == 'f docstring'
