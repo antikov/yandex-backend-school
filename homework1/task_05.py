@@ -10,7 +10,7 @@ def get_numbers():
     while True:
         url = f'https://api.github.com/repos/microsoft/dotnet/issues?state=closed&page={page}&perpage=100'
         r = requests.get(url).json()
-        if len(r) == 0:
+        if len(r) == 0 or not isinstance(r, list):
             break
         print(r)
         numbers = [el['number'] for el in r]
