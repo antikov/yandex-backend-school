@@ -6,16 +6,12 @@ class A:
     def f(self):
         return A
 
-Meta = type("Meta",(A,),{})
+class Meta(type):
+    def __init__(cls, name, bases, dct):
+        super(Meta, cls).__init__(name, bases, dct)
+        cls.f = A().f
 
-# class Meta(type, A):
-#     def __new__(cls, name, bases, dct):
-#         x = super().__new__(cls, name, bases, dct)
-#         return x
 class B(metaclass=Meta):
     pass
-print(A().f())
-print(A)
-print(B())
-print(B().f())
+
 assert B().f() == A
